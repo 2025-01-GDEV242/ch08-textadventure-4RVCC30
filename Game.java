@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 /**
  *  This class is the main class of the "World of Zuul" application. 
  *  "World of Zuul" is a very simple, text based adventure game.  Users 
@@ -11,20 +12,22 @@
  *  rooms, creates the parser and starts the game.  It also evaluates and
  *  executes the commands that the parser returns.
  * 
- * @author  Michael Kölling and David J. Barnes
- * @version 2016.02.29
+ * @author  Emery Vallejo
+ * @version 2025.03.29
  */
 
 public class Game 
 {
     private Parser parser;
-    private Room currentRoom;
+    private Player player;
+    private ArrayList<Room> roomHistory = new ArrayList<Room>();
         
     /**
      * Create the game and initialise its internal map.
      */
     public Game() 
     {
+        player = new Player();
         createRooms();
         parser = new Parser();
     }
@@ -34,30 +37,124 @@ public class Game
      */
     private void createRooms()
     {
-        Room outside, theater, pub, lab, office;
+        /*                          
+         *                  __________________
+         *                 |???               |
+         *                 |Items: Silouette  |
+         *                  ------------------
+         *                          /\
+         *                         /  \
+         * ______________   ------------------  __________________
+         * |House       | / |Mall closing    |\ |School Hall     |
+         * |Items: Game,|/  |Items: Pamphlet | \|Items: Text Book|
+         * |Sillouette, |\  |Toy Train       | /|Temporary ID    |
+         * |Baby Carrot | \ |Sillouette      |/ |Sillouette      |
+         * --------------   ------------------  ------------------
+         *                         \  /                \  /
+         *                          \/                  \/
+         *                   ------------------  ------------------
+         *                   |Main Street     |  |PoolSideDriveway|
+         *                   |Items:Sillouette|  |Items:Sillouette|
+         *                   |You,            |  |Phone           |
+         *                   |Stick           |  |Pool            |
+         *                   ------------------  ------------------
+         *                          \  /               \  /
+         *                           \/                 \/
+         * --------------    ------------------  ------------------
+         * |Love        | / |Bedroom          |\ |Inside          |
+         * |Items:Fear  |/  |Items: Sharp     | \|Items: Who      |
+         * |Pain        |\  |Sillouette       | /|What            |
+         * |Passion     | \ |Computer Video   |/ |Why             |
+         * --------------   -------------------  ------------------
+         * 
+         */
+        Room nowhere,house,mallClosing,schoolHall,mainStreet,poolSideDriveway,love,bedroom,inside;
+        Item[] nowhereItems = {
+                new Item("Sillouette", "It waves slowly still in the space, you're not sure if it's aware of itself.", false)},
+                
+               houseItems = {
+                new Item("Game", "An old games console, it lacks the sleek design of a Playstaion or Xbox. Instead it's made up of rounded shapes with a slot for a cartridge and a smiling cartoon character.",true),
+                new Item("Sillouette", "It hangs at the center of the room, small and fragile. Whenever the room shifts it seems to draw it's attention towards the \"most interesting\" thing in the room.",false),
+                new Item("BabyCarrots","A bag of baby carrots, the sillouette seems to be staring intently at it.",true)}, 
+                
+                mallItems = {
+                new Item("Pamphlet", "You can't seem to make out the symbols on the page, you've definetly seen them but haven't learned them. The pictures are pretty though.",true),
+                new Item("ToyTrain", "You see one toy train, then another, and another. So many trains! Something inside you warms.",true),
+                new Item("Sillouette", "It holds you hand gently and tightly, as if protecting you. It doesn't have a face, but you feel it's smile",false)
+                },
+                schoolItems = {
+                new Item("Text Book", "Boring.",true),
+                new Item("Temporary-ID", "Never could remeber to bring your student ID with you. Plus, the lanyard is itchy.",true),
+                new Item("Sillouette", "Doesn't matter. You'll never seem them again.",false)
+                },
+                mainStreetItems = {
+                new Item("You","Why do you feel so sad, nervous, and alone? You'll move on.",false),
+                new Item("Sillouette","It walks next to you, but not with you",false),
+                new Item("Stick", "The sillouette holds it in it's hand. Passive protection",false)
+                },
+                poolItems = {
+                new Item("Sillouette","It tosses itself back and forth in the pool like it's never been happier to do anything ever.",false),
+                new Item("Phone", "You knew this was a bad idea. Yet you let it happen.",true),
+                new Item("Pool", "You wade in the pool a little bit. You feel less nervous than before, relief wafts over you. You did it.",true)
+                },
+                loveItems = {
+                new Item("Fear","Hesitation protects you?",false),
+                new Item("Pain","Shows you really care?",false),
+                new Item("Passion", "Comes and goes.",false)
+                },
+                bedroomItems = {
+                new Item("Yeah","Ow... Huh.",false),
+                new Item("Sillouette","Yeah, was gonna happen eventually",false),
+                new Item("ComputerVideo", "Mumbo Jumbo has always been good noise.",false),
+            },
+                insideItems = {
+                new Item("Who", "You!",false),
+                new Item("What", "You!",false),
+                new Item("Why", "Not!",false),
+                };
       
         // create the rooms
-        outside = new Room("outside the main entrance of the university");
-        theater = new Room("in a lecture theater");
-        pub = new Room("in the campus pub");
-        lab = new Room("in a computing lab");
-        office = new Room("in the computing admin office");
+        nowhere = new Room("???", nowhereItems);
+        house = new Room("A fairly large house, inside are several rooms,but they all exist in one space. You can't walk, but the room shifts around you instead",houseItems);
+        mallClosing = new Room("A Mall closing down for the end of the day, the only lights that seem to be on are the ones above you. Someone has hold of your hand", mallItems);
+        schoolHall = new Room("At the end of the hall you can see two double sided doors, each step you take towards one the room shifts so you can never see what's on the other side",schoolItems);
+        mainStreet = new Room("Family run shops of all kinds surrond your left and right, next to you something follows your every step but when you reach out, it fades",mainStreetItems);
+        poolSideDriveway = new Room("The sun shines through the umbrella as you stress in a chair, you feel as if you've made a very big decision",poolItems);
+        love = new Room("It fully surrounds",loveItems);
+        bedroom = new Room("a normal bedroom, a strange situation",bedroomItems);
+        inside = new Room("You",insideItems);
+        //initialise room exits
+        nowhere.setExit("south", mallClosing);
+
+        house.setExit("east", mallClosing);
         
-        // initialise room exits
-        outside.setExit("east", theater);
-        outside.setExit("south", lab);
-        outside.setExit("west", pub);
+        mallClosing.setExit("north", nowhere);
+        mallClosing.setExit("east", schoolHall);
+        mallClosing.setExit("south",mainStreet);
+        mallClosing.setExit("west", house);
+        
+        schoolHall.setExit("south",poolSideDriveway);
+        schoolHall.setExit("west",mallClosing);
+        
+        mainStreet.setExit("north",mallClosing);
+        mainStreet.setExit("south",bedroom);
+        
+        poolSideDriveway.setExit("north",schoolHall);
+        poolSideDriveway.setExit("south",inside);
+        
+        love.setExit("east",bedroom);
+        
+        bedroom.setExit("north",mainStreet);
+        bedroom.setExit("east",inside);
+        bedroom.setExit("west",love);
+        
+        inside.setExit("north",poolSideDriveway);
+        inside.setExit("west", bedroom);
 
-        theater.setExit("west", outside);
 
-        pub.setExit("east", outside);
-
-        lab.setExit("north", outside);
-        lab.setExit("east", office);
-
-        office.setExit("west", lab);
-
-        currentRoom = outside;  // start game outside
+        player.goToRoom(nowhere); // start game outside
+        roomHistory.add(player.getCurrentRoom());
+        
     }
 
     /**
@@ -88,7 +185,7 @@ public class Game
         System.out.println("World of Zuul is a new, incredibly boring adventure game.");
         System.out.println("Type '" + CommandWord.HELP + "' if you need help.");
         System.out.println();
-        System.out.println(currentRoom.getLongDescription());
+        System.out.println(player.getCurrentRoom().getLongDescription());
     }
 
     /**
@@ -118,10 +215,100 @@ public class Game
             case QUIT:
                 wantToQuit = quit(command);
                 break;
+                
+            case LOOK:
+                look();
+                break;
+                
+            case BACK:
+                back(command);
+                break;
+            
+            case GRAB:
+                grab(command);
+                break;
+            
+            case INV:
+                player.showInventory();
+                break;
+                
+            case DROP:
+                drop(command);
+                break;
+                
         }
         return wantToQuit;
     }
+    private void drop(Command command)
+    {
+        ArrayList<Item> items = player.getInventory();
+        for (int i = 0; i < items.size() ;i++)
+        {
+            String commandToLower = command.getSecondWord().toLowerCase();
+            if(commandToLower.equals(items.get(i).getName().toLowerCase()))
+            {
+                player.dropItem(items.get(i));
+            }
+        }
+    }
+    private void grab(Command command)
+    {
+        ArrayList<Item> items = player.getCurrentRoom().getItemsInRoom();
+        for (int i = 0; i < items.size() ;i++)
+        {
+            String commandToLower = command.getSecondWord().toLowerCase();
+            if(commandToLower.equals(items.get(i).getName().toLowerCase()))
+            {
+                player.pickUpItem(items.get(i));
+            }
+        }
+    }
+    private void back(Command command)
+    {
+        if(roomHistory.size() <= 1)
+        {
+            System.out.println("You can't go any further back!");
+            return;
+        }
+        
+        if(!command.hasSecondWord()) {
+            player.goToRoom(roomHistory.get(roomHistory.size() - 2));
+            roomHistory.remove((roomHistory.size() - 1));
+            roomHistory.remove((roomHistory.size() - 1));
+            System.out.println(player.getCurrentRoom().getLongDescription());
+            return;
+        }
 
+        int howFarBack = Integer.parseInt(command.getSecondWord());
+        if (howFarBack < roomHistory.size())
+        {
+            Room nextRoom = roomHistory.get(roomHistory.size() - (1 + howFarBack));
+            for(int i = 0; i < howFarBack; i++)
+            {
+                roomHistory.remove(roomHistory.size() - (1+i));
+            }
+            player.goToRoom(nextRoom);
+            System.out.println(player.getCurrentRoom().getLongDescription());
+            roomHistory.add(player.getCurrentRoom());
+            
+       
+        }else
+        {
+            System.out.println("You can't go back that far.");
+            System.out.println("You can go back " + (roomHistory.size() - 1) + " Steps.");
+        }
+    }
+    private void look()
+    {
+        System.out.println(player.getCurrentRoom().getLongDescription());
+        System.out.println("Items in this room: ");
+        int i = 1;
+        for(Item item : player.getCurrentRoom().getItemsInRoom())
+        {
+            System.out.println(i + ": " + item.getName() + " ");
+            i++;
+        }
+    }
     // implementations of user commands:
 
     /**
@@ -153,14 +340,15 @@ public class Game
         String direction = command.getSecondWord();
 
         // Try to leave current room.
-        Room nextRoom = currentRoom.getExit(direction);
+        Room nextRoom = player.getCurrentRoom().getExit(direction);
 
         if (nextRoom == null) {
             System.out.println("There is no door!");
         }
         else {
-            currentRoom = nextRoom;
-            System.out.println(currentRoom.getLongDescription());
+            player.goToRoom(nextRoom);
+            System.out.println(player.getCurrentRoom().getLongDescription());
+            roomHistory.add(player.getCurrentRoom());
         }
     }
 
